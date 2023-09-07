@@ -1,0 +1,9 @@
+{
+  "lang":"en",
+  "name":"colorExtractor",
+  "description":"Model to extract color entities from chunks of notes",
+  "author":"Liubomyr Gavryliv",
+  "email":"liubomyr.gavryliv@gmail.com",
+  "url":"mineralogy.rocks",
+  "license":"MIT"
+}

@@ -3,9 +3,6 @@ description: "The model is used to deal with chunks of notes describing the colo
               The model is trained on the data from Mindat."
 spacy_version: ">=3.1.0,<4.0.0"
 
-env:
-  HUGGING_FACE_HUB_TOKEN: ${env.HUGGING_FACE_HUB_TOKEN}
-
 vars:
   name: "colorExtractor"
   version: "0.0.1"
@@ -75,7 +72,7 @@ commands:
   - name: package
     help: "Package the trained model as a wheel so it can be installed"
     script:
-      - "python -m spacy package ./training/model-best packages --name ${vars.name} --version ${vars.version} --force --build wheel"
+      - "python -m spacy package ./training/model-best packages --name ${vars.name} --version ${vars.version}  --meta-path meta.json --force --build wheel"
     deps:
       - "./training/model-best"
     outputs_no_cache:

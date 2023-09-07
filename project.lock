@@ -39,7 +39,7 @@ preprocess:
     - path: ./assets/color_train.json
       md5: ccfe9593bf28da768de04cdc7090d01c
     - path: ./assets/color_dev.json
-      md5: 41678c6622ecd26bf7f7a313e554d853
+      md5: a245f1ebe59f3321fa3af7bd2cda4ccb
     - path: ./scripts/corpus.py
       md5: 91c41806ee61c1866b349872095c9e40
     - path: ./scripts/preprocess.py
@@ -48,11 +48,11 @@ preprocess:
     - path: ./assets/color_train.jsonl
       md5: fd3557a94a6d94e0894536a13468961d
     - path: ./assets/color_dev.jsonl
-      md5: 9531d1f536189a7fa1d1f524b514c493
+      md5: 9aee5b07ce2f4467517f24ff3f38773f
     - path: ./corpus/color_train.spacy
       md5: 2721ccf9c1be4ea4478bc49862dfab70
     - path: ./corpus/color_dev.spacy
-      md5: 85cc48cebfc53f3b18d249664dbe4c9a
+      md5: 6ec34cd816055deae526a06824e3f300
   spacy_version: 3.6.1
   spacy_git_version: 458bc5f45
 train:
@@ -64,12 +64,12 @@ train:
     - path: ./corpus/color_train.spacy
       md5: 2721ccf9c1be4ea4478bc49862dfab70
     - path: ./corpus/color_dev.spacy
-      md5: 85cc48cebfc53f3b18d249664dbe4c9a
+      md5: 6ec34cd816055deae526a06824e3f300
     - path: ./configs/config.cfg
-      md5: 5d4d91f367a430827812efe0d497b898
+      md5: 2180b648dba7f07d794224c7b140b8ce
   outs:
     - path: training/model-best
-      md5: c740a4bad3189e60198ebeaaea53db50
+      md5: f1e5ab98a0e5656b6dfca0e4dccadf81
   spacy_version: 3.6.1
   spacy_git_version: 458bc5f45
 evaluate:
@@ -79,12 +79,12 @@ evaluate:
       ./metrics/colorExtractor-0.0.1.json
   deps:
     - path: ./training/model-best
-      md5: c740a4bad3189e60198ebeaaea53db50
+      md5: f1e5ab98a0e5656b6dfca0e4dccadf81
     - path: ./corpus/color_dev.spacy
-      md5: 85cc48cebfc53f3b18d249664dbe4c9a
+      md5: 6ec34cd816055deae526a06824e3f300
   outs:
     - path: ./metrics/colorExtractor-0.0.1.json
-      md5: 28f8f7acb157bf8acfdd35e558c0cd9d
+      md5: c5271b9d2bd6d3a207cbf478e273a31c
   spacy_version: 3.6.1
   spacy_git_version: 458bc5f45
 clean:
@@ -101,13 +101,13 @@ package:
   cmd: python -m spacy run package
   script:
     - python -m spacy package ./training/model-best packages --name colorExtractor
-      --version 0.0.1 --force
+      --version 0.0.1  --meta-path meta.json --force --build wheel
   deps:
     - path: ./training/model-best
-      md5: c740a4bad3189e60198ebeaaea53db50
+      md5: f1e5ab98a0e5656b6dfca0e4dccadf81
   outs:
-    - path: ./packages/en_colorExtractor-0.0.1/dist/en_colorExtractor-0.0.1.tar.gz
-      md5: b948711c39e385110725141d0bbe031c
+    - path: ./packages/en_colorExtractor-0.0.1/dist/en_colorExtractor-0.0.1-py3-none-any.whl
+      md5: 139d96fabaae82aeac06f124aae79cd3
   spacy_version: 3.6.1
   spacy_git_version: 458bc5f45
 package-wheel:
