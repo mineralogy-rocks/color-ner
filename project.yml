@@ -1,0 +1,95 @@
+title: "NER model for recognizing color entities within chunks of notes"
+description: "The model is used to deal with chunks of notes describing the color of mineral. 
+              The model is trained on the data from Mindat."
+spacy_version: ">=3.1.0,<4.0.0"
+
+env:
+  HUGGING_FACE_HUB_TOKEN: ${env.HUGGING_FACE_HUB_TOKEN}
+
+vars:
+  name: "colorExtractor"
+  version: "0.0.1"
+  config: "config"
+  lang: "en"
+  gpu: -1
+  train: "color_train"
+  dev: "color_dev"
+
+
+directories: ["assets", "configs", "corpus", "metrics", "packages", "training", "scripts"]
+
+assets:
+  - dest: "assets/${vars.train}.json"
+    description: "Training data with tagged COLOR and PRIMARY_COLOR spans"
+  - dest: "assets/${vars.dev}.json"
+    description: "Development data with tagged COLOR and PRIMARY_COLOR spans"
+
+workflows:
+  all:
+    - preprocess
+    - train
+    - evaluate
+    - package
+    - clean
+
+commands:
+  - name: preprocess
+    help: "Prepare jsonl train and dev data from raw data and save to spacy format"
+    script:
+      - "python ./scripts/preprocess.py ./assets/${vars.train}.json ./assets/${vars.train}.jsonl"
+      - "python ./scripts/preprocess.py ./assets/${vars.dev}.json ./assets/${vars.dev}.jsonl"
+      - "python ./scripts/corpus.py ./assets/${vars.train}.jsonl ./corpus/${vars.train}.spacy"
+      - "python ./scripts/corpus.py ./assets/${vars.dev}.jsonl ./corpus/${vars.dev}.spacy"
+    deps:
+      - "./assets/${vars.train}.json"
+      - "./assets/${vars.dev}.json"
+      - "./scripts/corpus.py"
+      - "./scripts/preprocess.py"
+    outputs:
+      - "./assets/${vars.train}.jsonl"
+      - "./assets/${vars.dev}.jsonl"
+      - "./corpus/${vars.train}.spacy"
+      - "./corpus/${vars.dev}.spacy"
+
+  - name: train
+    help: "Train the pipeline"
+    script:
+      - "python -m spacy train ./configs/${vars.config}.cfg -o ./training/ --gpu-id ${vars.gpu} --paths.train ./corpus/${vars.train}.spacy --paths.dev ./corpus/${vars.dev}.spacy"
+    deps:
+      - "./corpus/${vars.train}.spacy"
+      - "./corpus/${vars.dev}.spacy"
+      - "./configs/${vars.config}.cfg"
+    outputs:
+      - "training/model-best"
+
+  - name: evaluate
+    help: "Evaluate on the test data and save the metrics"
+    script:
+      - "python -m spacy evaluate ./training/model-best ./corpus/${vars.dev}.spacy --output ./metrics/${vars.name}-${vars.version}.json"
+    deps:
+      - "./training/model-best"
+      - "./corpus/${vars.dev}.spacy"
+    outputs:
+      - "./metrics/${vars.name}-${vars.version}.json"
+
+  - name: package
+    help: "Package the trained model as a wheel so it can be installed"
+    script:
+      - "python -m spacy package ./training/model-best packages --name ${vars.name} --version ${vars.version} --force --build wheel"
+    deps:
+      - "./training/model-best"
+    outputs_no_cache:
+      - "./packages/en_${vars.name}-${vars.version}/dist/en_${vars.name}-${vars.version}-py3-none-any.whl"
+
+  - name: push
+    help: "Push the package to the HuggingFace registry"
+    script:
+      - "python -m spacy huggingface-hub push ./packages/en_${vars.name}-${vars.version}/dist/en_${vars.name}-${vars.version}-py3-none-any.whl"
+
+  - name: clean
+    help: "Remove intermediate files"
+    script:
+      - "rm -rf ./training/*"
+      - "rm -rf ./metrics/*"
+      - "rm -rf ./corpus/*"
+      - "rm -rf ./packages/*"
